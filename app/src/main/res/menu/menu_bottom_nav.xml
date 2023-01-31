@@ -6,7 +6,7 @@
         android:icon="@drawable/ic_image_white"/>
 
     <item android:id="@+id/bottom_menu_pdfs"
-        android:title="PFDs"
+        android:title="PDFs"
         android:icon="@drawable/ic_pdf_white"/>
 
 </menu>

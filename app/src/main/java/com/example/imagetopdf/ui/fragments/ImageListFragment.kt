@@ -1,6 +1,7 @@
 package com.example.imagetopdf.ui.fragments
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -8,14 +9,12 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
+import android.nfc.Tag
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -23,6 +22,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.imagetopdf.Constants
+import com.example.imagetopdf.R
 import com.example.imagetopdf.data.ImageModel
 import com.example.imagetopdf.databinding.FragmentImageListBinding
 import com.example.imagetopdf.ui.adapters.ImageAdapter
@@ -80,6 +80,91 @@ class ImageListFragment : Fragment() {
         loadImages()
     }
 
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        setHasOptionsMenu(true)
+        super.onCreate(savedInstanceState)
+    }
+
+    //inflate menu_images.xml
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_images, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    //handle menu_images.xml iteam clicks
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(item.itemId == R.id.delete_image){
+            val builder = AlertDialog.Builder(mContext)
+            builder.setTitle("Delete Image(s)")
+                .setMessage("Are you sure you want to delete?")
+                .setPositiveButton("Delete All"){ dialog, which ->
+                    deleteImages(true)
+                }
+                .setNeutralButton("Delete Selected"){ dialog, which ->
+                    deleteImages(false)
+                }
+                .setNegativeButton("Cancel"){ dialog, which ->
+                    dialog.dismiss()
+                }
+                .show()
+        }
+
+        else if(item.itemId == R.id.image_pdf_item){
+            val builder = AlertDialog.Builder(mContext)
+            builder.setTitle("Convert to PDF")
+                .setMessage("Convert All/Selected to PDF")
+                .setPositiveButton("Convert All"){ dialog, which ->
+                    convertToPDF(true)
+                }
+                .setNeutralButton("Convert Selected"){ dialog, which ->
+                    convertToPDF(false)
+                }
+                .setNegativeButton("Cancel"){ dialog, which->
+                    dialog.dismiss()
+                }
+                .show()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun convertToPDF(convertAll: Boolean){
+
+    }
+
+    private fun deleteImages(deleteAll: Boolean){
+        //init separate array list of images to delete
+        var imagesToDeleteList = ArrayList<ImageModel>()
+        if(deleteAll){
+            val folder = File(mContext.getExternalFilesDir(null), Constants.IMAGES_FOLDER)
+            if(folder.exists()){
+                folder.deleteRecursively()
+            }
+        } else{
+            for(img in allImagesArrayList){
+                //check if image selected
+                if(img.checked){
+                    //img selected added to list
+                    try{
+                        //get the path of image to delete
+                        val path = "${img.imageUri.path}"
+                        val file = File(path)
+                        if(file.exists()){
+                            val isDeleted = file.delete()
+                        }
+                    }
+                    catch (e: Exception){
+                        Log.d(TAG, "loadImages: ")
+                    }
+                }
+            }
+        }
+        if(allImagesArrayList.isNotEmpty()){
+            Toast.makeText(mContext, "Deleted", Toast.LENGTH_SHORT).show()
+        }
+        loadImages()
+    }
+
     private fun loadImages(){
         allImagesArrayList = ArrayList()
         imageAdapter = ImageAdapter(mContext, allImagesArrayList)
@@ -94,7 +179,7 @@ class ImageListFragment : Fragment() {
                     Log.d(TAG, "fileName: ${file.name}")
 
                     val imageUri = Uri.fromFile(file)
-                    val imageModel = ImageModel(imageUri)
+                    val imageModel = ImageModel(imageUri, false)
                     allImagesArrayList.add(imageModel)
                     imageAdapter.notifyItemInserted(allImagesArrayList.size)
                 }
@@ -210,7 +295,7 @@ class ImageListFragment : Fragment() {
             saveImageToAppLevelDirectory(imageUri!!)
 
             //notify adapter that new img inserted
-            val imageModel = ImageModel(imageUri!!)
+            val imageModel = ImageModel(imageUri!!, false)
             allImagesArrayList.add(imageModel)
             imageAdapter.notifyItemInserted(allImagesArrayList.size)
 
@@ -244,7 +329,7 @@ class ImageListFragment : Fragment() {
             saveImageToAppLevelDirectory(imageUri!!)
 
             //notify adapter that new img inserted
-            val imageModel = ImageModel(imageUri!!)
+            val imageModel = ImageModel(imageUri!!, false)
             allImagesArrayList.add(imageModel)
             imageAdapter.notifyItemInserted(allImagesArrayList.size)
         }

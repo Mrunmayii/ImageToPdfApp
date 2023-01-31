@@ -15,6 +15,14 @@
             android:id="@+id/imageTv"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_image_black"/>
+
+        <CheckBox
+            android:id="@+id/checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:layout_alignParentEnd="true"/>
+
     </RelativeLayout>
 
 </com.google.android.material.card.MaterialCardView>
