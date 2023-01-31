@@ -2,16 +2,22 @@ package com.example.imagetopdf.ui.fragments
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.ProgressDialog
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.ImageDecoder
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
+import android.graphics.pdf.PdfDocument.PageInfo
 import android.net.Uri
-import android.nfc.Tag
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.view.*
@@ -28,6 +34,7 @@ import com.example.imagetopdf.databinding.FragmentImageListBinding
 import com.example.imagetopdf.ui.adapters.ImageAdapter
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.Executors
 
 
 class ImageListFragment : Fragment() {
@@ -41,6 +48,7 @@ class ImageListFragment : Fragment() {
     private lateinit var storagePermissions: Array<String>
     private lateinit var allImagesArrayList: ArrayList<ImageModel>
     private lateinit var imageAdapter : ImageAdapter
+    private lateinit var progressDialog: ProgressDialog
 
     //uri of img picked
     private var imageUri: Uri? = null
@@ -73,10 +81,16 @@ class ImageListFragment : Fragment() {
         )
         storagePermissions = arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
+
+        progressDialog = ProgressDialog(mContext)
+        progressDialog.setTitle("Please wait")
+        progressDialog.setCanceledOnTouchOutside(false)
+
         //show input image dialog
         binding.addImageFab.setOnClickListener {
             showInputImageDialog()
         }
+
         loadImages()
     }
 
@@ -128,8 +142,93 @@ class ImageListFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun convertToPDF(convertAll: Boolean){
 
+    private fun convertToPDF(convertAll: Boolean){
+        progressDialog.setMessage("Converting to PDF..")
+        progressDialog.show()
+
+        //init executor service for bg processing
+        val executorService = Executors.newSingleThreadExecutor()
+        val handler = Handler(Looper.getMainLooper())
+
+        executorService.execute{
+            var imgToPdfList = ArrayList<ImageModel>()
+            if(convertAll){
+                imgToPdfList = allImagesArrayList
+            }else{
+                for(img in allImagesArrayList.indices){
+                    if(allImagesArrayList[img].checked){
+                        imgToPdfList.add(allImagesArrayList[img])
+                    }
+                }
+            }
+            Log.d(TAG, "convertToPdf: List Size: ${imgToPdfList.size}")
+
+            try {
+                //create folder to save pdf
+                val root = File(mContext.getExternalFilesDir(null), Constants.PDF_FOLDER)
+                root.mkdirs()
+
+                //name w extension of the img
+                val timestamp = System.currentTimeMillis()
+                val fileName = "PDF_$timestamp.pdf"
+
+                val file = File(root, fileName)
+                val fileOutputStream = FileOutputStream(file)
+                val pdfDoc = PdfDocument()
+
+                for(i in imgToPdfList.indices){
+                    val imageToPdfUri = imgToPdfList[i].imageUri
+                    try{
+
+                        //get bitmap
+                        var bitmap: Bitmap
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            bitmap= ImageDecoder.decodeBitmap(ImageDecoder.createSource(
+                                mContext.contentResolver, imageToPdfUri
+                            ))
+                        }
+                        else{
+                            bitmap = MediaStore.Images.Media.getBitmap(mContext.contentResolver, imageToPdfUri)
+                        }
+
+                        bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false)
+                        val pageInfo = PageInfo.Builder(bitmap.width, bitmap.height, i+1).create()
+                        //create pdf page
+                        val page = pdfDoc.startPage(pageInfo)
+
+                        //for pg color
+                        val paint = Paint()
+                        paint.color = Color.WHITE
+
+                        val canvas = page.canvas
+                        canvas.drawPaint(paint)
+                        canvas.drawBitmap(bitmap, 0f, 0f, null)
+
+                        pdfDoc.finishPage(page)
+                        bitmap.recycle()  //call recycle to free memory asap before decoding 2nd bitmap
+
+                    }
+                    catch(e: Exception){
+                        Log.e(TAG, "convertToPDF", e)
+                    }
+                }
+
+                //add pdf pages to pdf doc
+                pdfDoc.writeTo(fileOutputStream)
+                pdfDoc.close()
+            }
+            catch (e: Exception){
+                Log.d(TAG, "convertTo Pdf", e)
+            }
+
+            //
+            handler.post{
+                Log.d(TAG, "convertToPDF: converted..")
+                progressDialog.dismiss()
+                Toast.makeText(mContext, "Converted", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun deleteImages(deleteAll: Boolean){
