@@ -10,15 +10,14 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".activities.ImageViewActivity">
+        tools:context=".activities.PdfViewActivity">
 
-        <ImageView
-            android:id="@+id/imageTv"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/pdfViewRv"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_image_black"
-            android:adjustViewBounds="true"
-            android:layout_centerInParent="true" />
+            android:layout_height="match_parent"
+            tools:listitem="@layout/pdf_card"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 
     </RelativeLayout>
 </layout>

@@ -8,9 +8,8 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
-import com.example.imagetopdf.ImageViewActivity
+import com.example.imagetopdf.activities.ImageViewActivity
 import com.example.imagetopdf.R
 import com.example.imagetopdf.data.ImageModel
 

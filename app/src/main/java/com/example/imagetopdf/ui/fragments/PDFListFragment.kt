@@ -1,6 +1,7 @@
 package com.example.imagetopdf.ui.fragments
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +11,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.imagetopdf.Constants
+import com.example.imagetopdf.RvListenerPdf
+import com.example.imagetopdf.activities.PdfViewActivity
 import com.example.imagetopdf.data.PdfModel
 import com.example.imagetopdf.databinding.FragmentPDFListBinding
 import com.example.imagetopdf.ui.adapters.PdfAdapter
@@ -54,7 +57,21 @@ class PDFListFragment : Fragment() {
     private fun loadPdfDocuments(){
         Log.d(TAG, "loadPdfDocuments: ")
         pdfArrayList = ArrayList()
-        pdfAdapter = PdfAdapter(mContext, pdfArrayList)
+        pdfAdapter = PdfAdapter(mContext, pdfArrayList, object: RvListenerPdf{
+            override fun onPdfClick(pdfModel: PdfModel, position: Int) {
+                val intent = Intent(mContext, PdfViewActivity::class.java)
+                intent.putExtra("pdfUri", "${pdfModel.uri}")
+                startActivity(intent)
+            }
+
+            override fun onPdfMoreClick(
+                pdfModel: PdfModel,
+                position: Int,
+                holder: PdfAdapter.PdfHolder
+            ) {
+
+            }
+        })
         pdfRv.adapter = pdfAdapter
 
         val folder = File(mContext.getExternalFilesDir(null), Constants.PDF_FOLDER)

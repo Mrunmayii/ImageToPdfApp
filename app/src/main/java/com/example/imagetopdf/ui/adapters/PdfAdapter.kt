@@ -18,12 +18,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.imagetopdf.Methods
 import com.example.imagetopdf.R
+import com.example.imagetopdf.RvListenerPdf
 import com.example.imagetopdf.data.PdfModel
 import java.util.concurrent.Executors
 
 class PdfAdapter(
     private val context: Context,
-    private val pdfArrayList: ArrayList<PdfModel>
+    private val pdfArrayList: ArrayList<PdfModel>,
+    private val rvListenerPdf: RvListenerPdf
 ) : RecyclerView.Adapter<PdfAdapter.PdfHolder>() {
 
     companion object {
@@ -58,6 +60,13 @@ class PdfAdapter(
         holder.nameTv.text = name
         holder.dateTv.text = formattedDate
 
+        holder.itemView.setOnClickListener {
+            rvListenerPdf.onPdfClick(pdfModel, position)
+        }
+
+        holder.moreBtn.setOnClickListener{
+            rvListenerPdf.onPdfMoreClick(pdfModel, position, holder)
+        }
     }
 
     override fun getItemCount(): Int {

@@ -1,10 +1,10 @@
-package com.example.imagetopdf
+package com.example.imagetopdf.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.bumptech.glide.Glide
+import com.example.imagetopdf.R
 import com.example.imagetopdf.databinding.ActivityImageViewBinding
-import com.example.imagetopdf.databinding.ActivityMainBinding
 
 class ImageViewActivity : AppCompatActivity() {
 
@@ -18,7 +18,8 @@ class ImageViewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityImageViewBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        val view = binding.root
+        setContentView(view)
 
         supportActionBar?.title = "Image View"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
