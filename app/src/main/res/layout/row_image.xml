@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:layout_alignParentEnd="true"
-                android:buttonTint="#2C3875" />
+                android:buttonTint="#4DDADF" />
 
         </RelativeLayout>
 

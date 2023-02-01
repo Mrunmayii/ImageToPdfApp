@@ -1,4 +1,4 @@
-package com.example.imagetopdf
+package com.example.imagetopdf.utils
 
 import com.example.imagetopdf.data.PdfModel
 import com.example.imagetopdf.ui.adapters.PdfAdapter

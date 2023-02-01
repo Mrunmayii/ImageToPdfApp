@@ -1,4 +1,4 @@
-package com.example.imagetopdf
+package com.example.imagetopdf.utils
 
 object Constants {
     //sub folder in app level directory to save all picked images

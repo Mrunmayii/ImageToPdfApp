@@ -24,10 +24,11 @@ import android.view.*
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.example.imagetopdf.Constants
+import com.example.imagetopdf.utils.Constants
 import com.example.imagetopdf.R
 import com.example.imagetopdf.data.ImageModel
 import com.example.imagetopdf.databinding.FragmentImageListBinding
@@ -44,8 +45,6 @@ class ImageListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var mContext: Context
-    private lateinit var cameraPermissions: Array<String>
-    private lateinit var storagePermissions: Array<String>
     private lateinit var allImagesArrayList: ArrayList<ImageModel>
     private lateinit var imageAdapter : ImageAdapter
     private lateinit var progressDialog: ProgressDialog
@@ -55,9 +54,6 @@ class ImageListFragment : Fragment() {
 
     companion object{
         private const val TAG ="IMAGE_LIST_TAG"
-        private const val STORAGE_REQ_CODE = 100
-        private const val CAMERA_REQ_CODE = 101
-
     }
 
     override fun onAttach(context: Context) {
@@ -74,12 +70,6 @@ class ImageListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        cameraPermissions = arrayOf(
-            android.Manifest.permission.CAMERA,
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        storagePermissions = arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
 
         progressDialog = ProgressDialog(mContext)
@@ -360,7 +350,7 @@ class ImageListFragment : Fragment() {
                     pickImageCamera()
                 }
                 else{
-                    reqCameraPermission()
+                    requestCameraPermission.launch(arrayOf(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE))
                 }
             }
             else if( itemId == 2){
@@ -369,7 +359,7 @@ class ImageListFragment : Fragment() {
                     pickImageGallery()
                 }
                 else{
-                    reqStoragePermission()
+                    requestStoragePermission.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
             }
             return@setOnMenuItemClickListener true
@@ -449,10 +439,20 @@ class ImageListFragment : Fragment() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun reqStoragePermission(){
-        Log.d(TAG, "reqStoragePerms")
-        requestPermissions(storagePermissions, STORAGE_REQ_CODE)
-    }
+
+    private var requestStoragePermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+        ActivityResultCallback<Boolean>() { isGranted ->
+            Log.d(TAG, "requestStoragePermission: isGRanted: $isGranted")
+            if (isGranted){
+                pickImageGallery()
+            }
+            else{
+                Toast.makeText(mContext, "Permission Denied", Toast.LENGTH_SHORT).show()
+            }
+            
+        }
+    )
 
     private fun checkCameraPermission(): Boolean{
         Log.d(TAG, "checkCameraPermission")
@@ -467,63 +467,21 @@ class ImageListFragment : Fragment() {
         return cameraResult && storageResult
     }
 
-    private fun reqCameraPermission(){
-        Log.d(TAG, "reqStoragePerms")
-        requestPermissions(cameraPermissions, CAMERA_REQ_CODE)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        Log.d(TAG, "onRequestPermissionsResult: ")
-
-        when(requestCode){
-            CAMERA_REQ_CODE ->{
-                if(grantResults.isNotEmpty()) {
-                    val camAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    val storageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED
-                    if(camAccepted && storageAccepted){
-                        Log.d(TAG, "onRequestPermissionsResult:Both perms granted ")
-                        pickImageCamera()
-                    }
-                    else{
-                        Toast.makeText(
-                            mContext,
-                            "Camera & Storage permissions required",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-                else{
-                    Toast.makeText(mContext, "Cancelled", Toast.LENGTH_SHORT).show()
-                }
+    private var requestCameraPermission = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+        ActivityResultCallback<Map<String, Boolean>> { result ->
+            Log.d(TAG, "requestCameraPermission: result: $result")
+            
+            var allGranted = true
+            for (isGranted in result.values){
+                allGranted = allGranted && isGranted
             }
-            STORAGE_REQ_CODE ->{
-                //check if some action from permission dialog is performed or not
-                if(grantResults.isNotEmpty()){
-                    val storageAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    if (storageAccepted){
-                        //storage perms granted, launch gallery
-                        Log.d(TAG, "onRequestPermissionsResult:Storage perms granted ")
-                        pickImageGallery()
-                    }
-                    else{
-                        //permission denied
-                        Toast.makeText(
-                            mContext,
-                            "Storage permissions required",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-                else{
-                    //neither allowed nor denied, but cancelled
-                    Toast.makeText(mContext, "Cancelled", Toast.LENGTH_SHORT).show()
-                }
+            if(allGranted){
+                pickImageCamera()
+            }
+            else{
+                Toast.makeText(mContext, "All or one of the permission Denied", Toast.LENGTH_SHORT).show()
             }
         }
-    }
+    )
 }

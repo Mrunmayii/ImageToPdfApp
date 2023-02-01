@@ -53,4 +53,8 @@ class ImageAdapter(
     override fun getItemCount(): Int {
         return imageArrayList.size
     }
+
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
 }

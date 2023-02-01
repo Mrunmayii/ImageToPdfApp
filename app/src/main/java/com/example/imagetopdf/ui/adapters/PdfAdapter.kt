@@ -16,9 +16,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.imagetopdf.Methods
+import com.example.imagetopdf.utils.Methods
 import com.example.imagetopdf.R
-import com.example.imagetopdf.RvListenerPdf
+import com.example.imagetopdf.utils.RvListenerPdf
 import com.example.imagetopdf.data.PdfModel
 import java.util.concurrent.Executors
 
