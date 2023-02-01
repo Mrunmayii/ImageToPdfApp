@@ -85,13 +85,13 @@ class ImageListFragment : Fragment() {
         progressDialog = ProgressDialog(mContext)
         progressDialog.setTitle("Please wait")
         progressDialog.setCanceledOnTouchOutside(false)
+        loadImages()
 
         //show input image dialog
         binding.addImageFab.setOnClickListener {
             showInputImageDialog()
         }
 
-        loadImages()
     }
 
 
@@ -156,9 +156,9 @@ class ImageListFragment : Fragment() {
             if(convertAll){
                 imgToPdfList = allImagesArrayList
             }else{
-                for(img in allImagesArrayList.indices){
-                    if(allImagesArrayList[img].checked){
-                        imgToPdfList.add(allImagesArrayList[img])
+                for(i in allImagesArrayList){
+                    if(i.checked){
+                        imgToPdfList.add(i)
                     }
                 }
             }
@@ -180,7 +180,7 @@ class ImageListFragment : Fragment() {
                 for(i in imgToPdfList.indices){
                     val imageToPdfUri = imgToPdfList[i].imageUri
                     try{
-
+                        Log.d(TAG, "convertToPDF: $i")
                         //get bitmap
                         var bitmap: Bitmap
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -249,19 +249,21 @@ class ImageListFragment : Fragment() {
                         val path = "${img.imageUri.path}"
                         val file = File(path)
                         if(file.exists()){
+                            Log.d(TAG, "File exist: $file")
                             val isDeleted = file.delete()
+                            Log.d(TAG, "File deleted: $isDeleted")
                         }
                     }
                     catch (e: Exception){
-                        Log.d(TAG, "loadImages: ")
+                        Log.d(TAG, "deletePictures: ", e)
                     }
                 }
             }
         }
+        loadImages()
         if(allImagesArrayList.isNotEmpty()){
             Toast.makeText(mContext, "Deleted", Toast.LENGTH_SHORT).show()
         }
-        loadImages()
     }
 
     private fun loadImages(){

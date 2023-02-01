@@ -2,6 +2,7 @@ package com.example.imagetopdf
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.FrameLayout
 import com.example.imagetopdf.databinding.ActivityMainBinding
 import com.example.imagetopdf.ui.fragments.ImageListFragment
 import com.example.imagetopdf.ui.fragments.PDFListFragment
@@ -10,7 +11,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var btmNavigationView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,12 +18,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         loadImagesFragment()
-//        btmNavigationView = findViewById(R.id.btmNavigationMenu)
 
         binding.btmNavigationMenu.setOnItemSelectedListener { menuItem ->
-            val itemId = menuItem.itemId
-
-            when(itemId){
+            when(menuItem.itemId){
                 R.id.bottom_menu_images ->{
                     loadImagesFragment()
                 }

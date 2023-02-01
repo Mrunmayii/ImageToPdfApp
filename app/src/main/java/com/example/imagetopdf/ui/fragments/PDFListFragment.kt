@@ -46,7 +46,7 @@ class PDFListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+//        pdfRv = view.findViewById(R.id.pdfRv)
         pdfRv = binding.pdfRv
         loadPdfDocuments()
     }
@@ -55,14 +55,14 @@ class PDFListFragment : Fragment() {
         Log.d(TAG, "loadPdfDocuments: ")
         pdfArrayList = ArrayList()
         pdfAdapter = PdfAdapter(mContext, pdfArrayList)
-        binding.pdfRv.adapter = pdfAdapter
+        pdfRv.adapter = pdfAdapter
 
         val folder = File(mContext.getExternalFilesDir(null), Constants.PDF_FOLDER)
         if(folder.exists()){
 
             val files = folder.listFiles()
             Log.d(TAG, "loadPdfDocuments: FileCnt:  ${files.size}")
-            for(file in files){
+            for(file in files!!){
                 //get uri of file to pass in model
                 val uri = Uri.fromFile(file)
                 val pdfModel = PdfModel(file, uri)

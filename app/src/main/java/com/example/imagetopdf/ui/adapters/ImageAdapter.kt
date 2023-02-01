@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
 import com.example.imagetopdf.ImageViewActivity
@@ -16,10 +17,10 @@ import com.example.imagetopdf.data.ImageModel
 class ImageAdapter(
     private val context: Context,
     private val imageArrayList: ArrayList<ImageModel>
-) : androidx.recyclerview.widget.RecyclerView.Adapter<ImageAdapter.ImageHolder>() {
+) : RecyclerView.Adapter<ImageAdapter.ImageHolder>() {
 
 
-    inner class ImageHolder(itemView: View) : ViewHolder(itemView){
+    inner class ImageHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
         var imageTv = itemView.findViewById<ImageView>(R.id.imageTv)
         var checkBox = itemView.findViewById<CheckBox>(R.id.checkbox)
     }
@@ -44,7 +45,7 @@ class ImageAdapter(
             context.startActivity(intent)
         }
 
-        holder.checkBox.setOnCheckedChangeListener { view, isChecked ->
+        holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
             //update value in model whether isChecked is true or false
             imgModel.checked = isChecked
         }

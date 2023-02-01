@@ -3,8 +3,9 @@
 
     <item android:id="@+id/bottom_menu_images"
         android:title="Images"
-        android:icon="@drawable/ic_image_white"/>
-<!--        android:iconTint="#E91E63"-->
+        android:icon="@drawable/ic_image_white"
+        android:iconTint="#E91E63"
+        />
 
     <item android:id="@+id/bottom_menu_pdfs"
         android:title="PDFs"

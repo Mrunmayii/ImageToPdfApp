@@ -1,5 +1,6 @@
 package com.example.imagetopdf.ui.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
@@ -14,7 +15,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.bumptech.glide.Glide
 import com.example.imagetopdf.Methods
 import com.example.imagetopdf.R
@@ -24,7 +24,7 @@ import java.util.concurrent.Executors
 class PdfAdapter(
     private val context: Context,
     private val pdfArrayList: ArrayList<PdfModel>
-) : Adapter<PdfAdapter.PdfHolder>() {
+) : RecyclerView.Adapter<PdfAdapter.PdfHolder>() {
 
     companion object {
         private const val TAG = "ADAPTER_PDF_TAG"
@@ -35,7 +35,7 @@ class PdfAdapter(
         var nameTv: TextView = itemView.findViewById(R.id.nameTv)
         var pagesTv: TextView = itemView.findViewById(R.id.pagesTv)
         var sizeTv: TextView = itemView.findViewById(R.id.sizeTv)
-        var morebTN: ImageButton = itemView.findViewById(R.id.moreBtn)
+        var moreBtn: ImageButton = itemView.findViewById(R.id.moreBtn)
         var dateTv: TextView = itemView.findViewById(R.id.dateTv)
 
     }
@@ -51,15 +51,20 @@ class PdfAdapter(
         val timestamp = pdfModel.file.lastModified()
         val formattedDate: String = Methods.formatTimestamp(timestamp)
 
+        loadThumbnailFromPdf(pdfModel, holder)
+        loadFileSize(pdfModel, holder)
+
+        //set data to ui views
         holder.nameTv.text = name
         holder.dateTv.text = formattedDate
 
-        loadThumbnailFromPdf(pdfModel, holder)
-        loadFileSize(pdfModel, holder)
     }
 
-    private fun loadFileSize(pdfModel: PdfModel, holder: PdfAdapter.PdfHolder) {
-        Log.d(TAG, "loadFileSize: ")
+    override fun getItemCount(): Int {
+        return pdfArrayList.size
+    }
+
+    private fun loadFileSize(pdfModel: PdfModel, holder: PdfHolder) {
         val bytes: Double = pdfModel.file.length().toDouble()
         val kb = bytes / 1024
         val mb = kb / 1024
@@ -77,15 +82,14 @@ class PdfAdapter(
         holder.sizeTv.text = size
     }
 
-    private fun loadThumbnailFromPdf(pdfModel: PdfModel, holder: PdfAdapter.PdfHolder) {
-        Log.d(TAG, "loadThumbnailFromPdf: ")
+    @SuppressLint("SetTextI18n")
+    private fun loadThumbnailFromPdf(pdfModel: PdfModel, holder: PdfHolder) {
         //init executorService for bg processing
         val executorService = Executors.newSingleThreadExecutor()
         val handler = Handler(Looper.getMainLooper())
+        var pageCount = 0
         executorService.execute {
             var thumbnailBitmap: Bitmap? = null
-            var pageCount = 0
-
             try {
 
                 val parcelFileDescriptor =
@@ -128,7 +132,4 @@ class PdfAdapter(
         }
     }
 
-    override fun getItemCount(): Int {
-        return pdfArrayList.size
-    }
 }
